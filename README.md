@@ -32,21 +32,25 @@ The middleware writes the data returned by the Cloud Health module as JSON, and 
 
 
 ### Using Cloud Health with Node.js
-1. Set up a HealthChecker:
+1. Installation:
+  ```bash
+  npm install @cloudnative/health-connect
+  ```
+2. Set up a HealthChecker:
 
   ```js
   const health = require('@cloudnative/health-connect');
   let healthcheck = new health.HealthChecker();
   ```
   
-2. Register a Liveness endpoint:
+3. Register a Liveness endpoint:
 
   ```js
   app.use('/health', health.LivenessEndpoint(healthcheck))
   ```
   If no livessness checks are registered, this will report `200 OK` and `UP`.
     
-3. Register a readiness endpoint:
+4. Register a readiness endpoint:
 
   ```js
   app.use('/ready', health.ReadinessEndpoint(healthcheck))
