@@ -16,7 +16,7 @@ script:
   - npm test
 
 after_script:
-  - npm install coveralls && npm run coveralls
+  - npm run coveralls
   
 branches:
   except:
