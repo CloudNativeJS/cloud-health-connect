@@ -28,7 +28,7 @@ describe('Connect Cloud Health test suite', function() {
     const reqStub: Partial<http.IncomingMessage> = {};
     const nextStub: Partial<NextFunction> = {};
     const resStub: Partial<http.ServerResponse> = {
-      write: sinon.stub(),
+      write: sinon.fake(),
       end: function () {
         let expectedStatus = 200;
         let code = resStub.statusCode ? resStub.statusCode : 0
@@ -62,8 +62,7 @@ describe('Connect Cloud Health test suite', function() {
     const reqStub: Partial<http.IncomingMessage> = {};
     const nextStub: Partial<NextFunction> = {};
     const resStub: Partial<http.ServerResponse> = {
-      write: sinon.stub(),
-      //write: sinon.stub(),
+      write: sinon.fake(),
       end: function () {
         let expectedStatus = 200;
         let code = resStub.statusCode ? resStub.statusCode : 0
@@ -89,7 +88,7 @@ describe('Connect Cloud Health test suite', function() {
     const reqStub: Partial<http.IncomingMessage> = {};
     const nextStub: Partial<NextFunction> = {};
     const resStub: Partial<http.ServerResponse> = {
-      write: sinon.stub(),
+      write: sinon.fake(),
       end: function () {
         let expectedStatus = 503;
         let code = resStub.statusCode ? resStub.statusCode : 0
@@ -120,7 +119,7 @@ describe('Connect Cloud Health test suite', function() {
     const reqStub: Partial<http.IncomingMessage> = {};
     const nextStub: Partial<NextFunction> = {};
     const resStub: Partial<http.ServerResponse> = {
-      write: sinon.stub(),
+      write: sinon.fake(),
       end: function () {
         let expectedStatus = 503;
         let code = resStub.statusCode ? resStub.statusCode : 0
@@ -151,7 +150,7 @@ describe('Connect Cloud Health test suite', function() {
     const reqStub: Partial<http.IncomingMessage> = {};
     const nextStub: Partial<NextFunction> = {};
     const resStub: Partial<http.ServerResponse> = {
-      write: sinon.stub(),
+      write: sinon.fake(),
       end: function () {
         let expectedStatus = 503;
         let code = resStub.statusCode ? resStub.statusCode : 0
@@ -183,7 +182,7 @@ describe('Connect Cloud Health test suite', function() {
     const reqStub: Partial<http.IncomingMessage> = {};
     const nextStub: Partial<NextFunction> = {};
     const resStub: Partial<http.ServerResponse> = {
-      write: sinon.stub(),
+      write: sinon.fake(),
       end: function () {
         let expectedStatus = 503;
         let code = resStub.statusCode ? resStub.statusCode : 0
@@ -201,7 +200,7 @@ describe('Connect Cloud Health test suite', function() {
     const reqStub: Partial<http.IncomingMessage> = {};
     const nextStub: Partial<NextFunction> = {};
     const resStub: Partial<http.ServerResponse> = {
-      write: sinon.stub(),
+      write: sinon.fake(),
       end: function () {
         let expectedStatus = 503;
         let code = resStub.statusCode ? resStub.statusCode : 0
@@ -244,7 +243,7 @@ describe('Connect Cloud Health test suite', function() {
     const reqStub: Partial<http.IncomingMessage> = {};
     const nextStub: Partial<NextFunction> = {};
     const resStub: Partial<http.ServerResponse> = {
-      write: sinon.stub(),
+      write: sinon.fake(),
       end: function () {
         let expectedStatus = 200;
         let code = resStub.statusCode ? resStub.statusCode : 0
@@ -274,7 +273,7 @@ describe('Connect Cloud Health test suite', function() {
     const reqStub: Partial<http.IncomingMessage> = {};
     const nextStub: Partial<NextFunction> = {};
     const resStub: Partial<http.ServerResponse> = {
-      write: sinon.stub(),
+      write: sinon.fake(),
       end: function () {
         let expectedStatus = 503;
         let code = resStub.statusCode ? resStub.statusCode : 0
@@ -305,7 +304,7 @@ describe('Connect Cloud Health test suite', function() {
     const reqStub: Partial<http.IncomingMessage> = {};
     const nextStub: Partial<NextFunction> = {};
     const resStub: Partial<http.ServerResponse> = {
-      write: sinon.stub(),
+      write: sinon.fake(),
       end: function () {
         let expectedStatus = 503;
         let code = resStub.statusCode ? resStub.statusCode : 0

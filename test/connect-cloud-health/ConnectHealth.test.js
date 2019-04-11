@@ -27,7 +27,7 @@ describe('Connect Cloud Health test suite', function () {
         const reqStub = {};
         const nextStub = {};
         const resStub = {
-            write: sinon_1.default.stub(),
+            write: sinon_1.default.fake(),
             end: function () {
                 let expectedStatus = 200;
                 let code = resStub.statusCode ? resStub.statusCode : 0;
@@ -55,8 +55,7 @@ describe('Connect Cloud Health test suite', function () {
         const reqStub = {};
         const nextStub = {};
         const resStub = {
-            write: sinon_1.default.stub(),
-            //write: sinon.stub(),
+            write: sinon_1.default.fake(),
             end: function () {
                 let expectedStatus = 200;
                 let code = resStub.statusCode ? resStub.statusCode : 0;
@@ -78,7 +77,7 @@ describe('Connect Cloud Health test suite', function () {
         const reqStub = {};
         const nextStub = {};
         const resStub = {
-            write: sinon_1.default.stub(),
+            write: sinon_1.default.fake(),
             end: function () {
                 let expectedStatus = 503;
                 let code = resStub.statusCode ? resStub.statusCode : 0;
@@ -104,7 +103,7 @@ describe('Connect Cloud Health test suite', function () {
         const reqStub = {};
         const nextStub = {};
         const resStub = {
-            write: sinon_1.default.stub(),
+            write: sinon_1.default.fake(),
             end: function () {
                 let expectedStatus = 503;
                 let code = resStub.statusCode ? resStub.statusCode : 0;
@@ -131,7 +130,7 @@ describe('Connect Cloud Health test suite', function () {
         const reqStub = {};
         const nextStub = {};
         const resStub = {
-            write: sinon_1.default.stub(),
+            write: sinon_1.default.fake(),
             end: function () {
                 let expectedStatus = 503;
                 let code = resStub.statusCode ? resStub.statusCode : 0;
@@ -159,7 +158,7 @@ describe('Connect Cloud Health test suite', function () {
         const reqStub = {};
         const nextStub = {};
         const resStub = {
-            write: sinon_1.default.stub(),
+            write: sinon_1.default.fake(),
             end: function () {
                 let expectedStatus = 503;
                 let code = resStub.statusCode ? resStub.statusCode : 0;
@@ -174,7 +173,7 @@ describe('Connect Cloud Health test suite', function () {
         const reqStub = {};
         const nextStub = {};
         const resStub = {
-            write: sinon_1.default.stub(),
+            write: sinon_1.default.fake(),
             end: function () {
                 let expectedStatus = 503;
                 let code = resStub.statusCode ? resStub.statusCode : 0;
@@ -210,7 +209,7 @@ describe('Connect Cloud Health test suite', function () {
         const reqStub = {};
         const nextStub = {};
         const resStub = {
-            write: sinon_1.default.stub(),
+            write: sinon_1.default.fake(),
             end: function () {
                 let expectedStatus = 200;
                 let code = resStub.statusCode ? resStub.statusCode : 0;
@@ -236,7 +235,7 @@ describe('Connect Cloud Health test suite', function () {
         const reqStub = {};
         const nextStub = {};
         const resStub = {
-            write: sinon_1.default.stub(),
+            write: sinon_1.default.fake(),
             end: function () {
                 let expectedStatus = 503;
                 let code = resStub.statusCode ? resStub.statusCode : 0;
@@ -263,7 +262,7 @@ describe('Connect Cloud Health test suite', function () {
         const reqStub = {};
         const nextStub = {};
         const resStub = {
-            write: sinon_1.default.stub(),
+            write: sinon_1.default.fake(),
             end: function () {
                 let expectedStatus = 503;
                 let code = resStub.statusCode ? resStub.statusCode : 0;
