@@ -10,8 +10,10 @@
 
 Cloud Health Connect provides a Connect Middleware for use in Express.js, Loopback and other frameworks that uses [Cloud Health](http://github.com/CloudNativeJS/cloud-health) to provide:
 
+* Combined Health checks
 * Readiness checks
 * Liveness checks
+* Combined Health (Readiness and Liveness) checks
 * Shutdown handling
 
 to enable applications for use with Kubernetes and Cloud Foundry based clouds.
@@ -22,14 +24,14 @@ Cloud Health Connect takes the status reported by [Cloud Health](http://github.c
 
 The middleware writes the data returned by the Cloud Health module as JSON, and sets the HTTP Status Code as follows:
 
-| Cloud Health Status | Readiness Status Code | Liveness Status Code |
-|---------------------|-----------------------|----------------------|
-| STARTING            | 503 UNAVAILABLE       | 200 OK               |
-| UP                  | 200 OK                | 200 OK               |
-| DOWN                | 503 UNAVAILABLE       | 503 UNAVAILABLE      |
-| STOPPING            | 503 UNAVAILABLE       | 503 UNAVAILABLE      |
-| STOPPED             | 503 UNAVAILABLE       | 503 UNAVAILABLE      |
-| -		               | 500 SERVER ERROR      | 500 SERVER ERROR      |
+| Cloud Health Status | Readiness Status Code | Liveness Status Code | Combined Health Status Code |
+|---------------------|-----------------------|----------------------|-----------------------------|
+| STARTING            | 503 UNAVAILABLE       | 200 OK               | 503 UNAVAILABLE             |
+| UP                  | 200 OK                | 200 OK               | 200 OK                      |
+| DOWN                | 503 UNAVAILABLE       | 503 UNAVAILABLE      | 503 UNAVAILABLE             |
+| STOPPING            | 503 UNAVAILABLE       | 503 UNAVAILABLE      | 503 UNAVAILABLE             |
+| STOPPED             | 503 UNAVAILABLE       | 503 UNAVAILABLE      | 503 UNAVAILABLE             |
+| -		               | 500 SERVER ERROR      | 500 SERVER ERROR     | 500 SERVER ERROR            |
 
 
 ### Using Cloud Health with Node.js
@@ -44,21 +46,34 @@ The middleware writes the data returned by the Cloud Health module as JSON, and 
   let healthcheck = new health.HealthChecker();
   ```
   
-3. Register a Liveness endpoint:
+3. Register a separate Liveness endpoint:
 
   ```js
-  app.use('/health', health.LivenessEndpoint(healthcheck))
+  app.use('/live', health.LivenessEndpoint(healthcheck))
   ```
   If no livessness checks are registered, this will report `200 OK` and `UP`.
     
-4. Register a readiness endpoint:
+4. Register a separate readiness endpoint:
 
   ```js
   app.use('/ready', health.ReadinessEndpoint(healthcheck))
   ```
   If no readiness checks are registered, this will report `200 OK` and `UP`.
+  
+5. Register a combined health endpoint:
 
-For information on how to register startup, liveness and shutdown checks, see the [Cloud Health documentation](https://github.com/CloudNativeJS/cloud-health/blob/master/README.md).
+  ```js
+  app.use('/health', health.ReadinessEndpoint(healthcheck))
+  ```
+  If no readiness or liveness checks are registered, this will report `200 OK` and `UP`.
+
+For information on how to register startup, readiness, liveness and shutdown checks, see the [Cloud Health documentation](https://github.com/CloudNativeJS/cloud-health/blob/master/README.md).
+
+#### Health, Liveness and Readiness endpoints
+
+The difference between liveness and readiness endpoints is the purpose purpose: readiness should be used to denote whether an application is "ready" to receive requests, and liveness should be used to denote whether an application is "live" (vs. in a state where it should be restarted.
+
+The health endpoint is designed for cloud technologies, such as cloud Foundry, that only support a single endpoint for both liveness and readiness checking.
 
 ### Using Cloud Health Connect with Typescript
 The Cloud Health Connect module is created in TypeScript and as such provides out of the box TypeScript support.
@@ -69,7 +84,8 @@ This module adopts the [Module Long Term Support (LTS)](http://github.com/CloudN
 
 | Module Version   | Release Date | Minimum EOL | EOL With     | Status  |
 |------------------|--------------|-------------|--------------|---------|
-| 1.x.x	         | July 2018    | Dec 2019    |              | Current |
+| 2.x.x	         | May 2019     | April 2021  |              | Current |
+| 1.x.x	         | July 2018    | Dec 2019    |              | LTS |
 
 
 ## License

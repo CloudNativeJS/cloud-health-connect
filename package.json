@@ -1,6 +1,6 @@
 {
   "name": "@cloudnative/health-connect",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "Connect middleware for Cloud Health",
   "main": "index.js",
   "scripts": {
@@ -37,6 +37,6 @@
     "typescript": "^3.3.3333"
   },
   "dependencies": {
-    "@cloudnative/health": "^1.0.1"
+    "@cloudnative/health": "^2.0.0"
   }
 }
