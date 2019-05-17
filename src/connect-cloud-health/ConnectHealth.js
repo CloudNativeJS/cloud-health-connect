@@ -17,16 +17,18 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const health_1 = require("@cloudnative/health");
 exports.HealthChecker = health_1.HealthChecker;
+exports.StartupCheck = health_1.StartupCheck;
 exports.ReadinessCheck = health_1.ReadinessCheck;
 exports.LivenessCheck = health_1.LivenessCheck;
 exports.ShutdownCheck = health_1.ShutdownCheck;
+exports.PingCheck = health_1.PingCheck;
 var StateCode;
 (function (StateCode) {
     StateCode[StateCode["OK"] = 200] = "OK";
     StateCode[StateCode["DOWN"] = 503] = "DOWN";
     StateCode[StateCode["ERRORED"] = 500] = "ERRORED";
 })(StateCode || (StateCode = {}));
-function LivenessEndpoint(checker) {
+function HealthEndpoint(checker) {
     let middleware = function (req, res, next) {
         checker.getStatus()
             .then((status) => {
@@ -50,14 +52,43 @@ function LivenessEndpoint(checker) {
             res.write(JSON.stringify(status));
             res.end();
         })
-            .catch((err) => { next(err); });
+            .catch((err) => { res.end(); });
+    };
+    return middleware;
+}
+exports.HealthEndpoint = HealthEndpoint;
+function LivenessEndpoint(checker) {
+    let middleware = function (req, res, next) {
+        checker.getLivenessStatus()
+            .then((status) => {
+            switch (status.status) {
+                case health_1.State.STARTING:
+                    res.statusCode = StateCode.OK;
+                    break;
+                case health_1.State.UP:
+                    res.statusCode = StateCode.OK;
+                    break;
+                case health_1.State.DOWN:
+                    res.statusCode = StateCode.DOWN;
+                    break;
+                case health_1.State.STOPPING:
+                    res.statusCode = StateCode.DOWN;
+                    break;
+                case health_1.State.STOPPED:
+                    res.statusCode = StateCode.DOWN;
+                    break;
+            }
+            res.write(JSON.stringify(status));
+            res.end();
+        })
+            .catch((err) => { res.end(); });
     };
     return middleware;
 }
 exports.LivenessEndpoint = LivenessEndpoint;
 function ReadinessEndpoint(checker) {
     let middleware = function (req, res, next) {
-        checker.getStatus()
+        checker.getReadinessStatus()
             .then((status) => {
             res.statusCode = StateCode.OK;
             switch (status.status) {
@@ -80,7 +111,7 @@ function ReadinessEndpoint(checker) {
             res.write(JSON.stringify(status));
             res.end();
         })
-            .catch((err) => { next(err); });
+            .catch((err) => { res.end(); });
     };
     return middleware;
 }

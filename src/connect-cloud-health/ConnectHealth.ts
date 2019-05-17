@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {HealthChecker, ReadinessCheck, LivenessCheck, ShutdownCheck, State} from '@cloudnative/health';
+import {HealthChecker, StartupCheck, ReadinessCheck, LivenessCheck, ShutdownCheck, State, PingCheck} from '@cloudnative/health';
 import {NextHandleFunction, NextFunction} from 'connect';
 import * as http from "http";
 
@@ -24,8 +24,7 @@ enum StateCode {
     ERRORED = 500
 }
 
-function LivenessEndpoint(checker: HealthChecker): NextHandleFunction {
-
+function HealthEndpoint(checker: HealthChecker): NextHandleFunction {
     let middleware = <NextHandleFunction> function (req: http.IncomingMessage, res: http.ServerResponse, next: NextFunction) {
         checker.getStatus()
         .then((status) => {
@@ -39,7 +38,27 @@ function LivenessEndpoint(checker: HealthChecker): NextHandleFunction {
             res.write(JSON.stringify(status));
             res.end()
         })
-        .catch((err) => {next(err)})
+        .catch((err) => {res.end()})
+    };
+    return middleware
+} 
+
+function LivenessEndpoint(checker: HealthChecker): NextHandleFunction {
+
+    let middleware = <NextHandleFunction> function (req: http.IncomingMessage, res: http.ServerResponse, next: NextFunction) {
+        checker.getLivenessStatus()
+        .then((status) => {
+            switch (status.status) {
+                case State.STARTING:    res.statusCode = StateCode.OK; break;
+                case State.UP:          res.statusCode = StateCode.OK; break;
+                case State.DOWN:        res.statusCode = StateCode.DOWN; break;
+                case State.STOPPING:    res.statusCode = StateCode.DOWN; break;
+                case State.STOPPED:     res.statusCode = StateCode.DOWN; break;
+            }
+            res.write(JSON.stringify(status));
+            res.end()
+        })
+        .catch((err) => {res.end()})
     };
     return middleware
 } 
@@ -47,7 +66,7 @@ function LivenessEndpoint(checker: HealthChecker): NextHandleFunction {
 function ReadinessEndpoint(checker: HealthChecker): NextHandleFunction {
 
     let middleware = <NextHandleFunction> function (req: http.IncomingMessage, res: http.ServerResponse, next: NextFunction) {
-        checker.getStatus()
+        checker.getReadinessStatus()
         .then((status) => {
             res.statusCode = StateCode.OK
             switch (status.status) {
@@ -60,9 +79,9 @@ function ReadinessEndpoint(checker: HealthChecker): NextHandleFunction {
             res.write(JSON.stringify(status));
             res.end();
         })
-        .catch((err) => {next(err)})
+        .catch((err) => {res.end()})
     };
     return middleware
 }
 
-export { LivenessEndpoint, ReadinessEndpoint, HealthChecker, ReadinessCheck, LivenessCheck, ShutdownCheck };
+export { HealthEndpoint, LivenessEndpoint, ReadinessEndpoint, HealthChecker, StartupCheck, ReadinessCheck, LivenessCheck, ShutdownCheck, PingCheck };
