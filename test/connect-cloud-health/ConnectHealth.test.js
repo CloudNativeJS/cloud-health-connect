@@ -205,15 +205,15 @@ describe('Connect Cloud Health test suite', function () {
         let cloudHealth = new index_1.HealthChecker();
         cloudHealth.registerStartupCheck(
         // tslint:disable-next-line:no-shadowed-variable
-        new index_1.ReadinessCheck("startup", () => new Promise(function (resolve, reject) {
+        new index_1.StartupCheck("startup", () => new Promise(function (resolve, reject) {
             resolve();
         })))
             .then(() => {
             index_1.ReadinessEndpoint(cloudHealth)(reqStub, resStub, nextStub);
         });
-        cloudHealth.registerLivenessCheck(
+        cloudHealth.registerReadinessCheck(
         // tslint:disable-next-line:no-shadowed-variable
-        new index_1.LivenessCheck("liveness", () => new Promise(function (resolve, reject) {
+        new index_1.LivenessCheck("readiness", () => new Promise(function (resolve, reject) {
             resolve();
         })));
         const reqStub = {};
@@ -224,7 +224,7 @@ describe('Connect Cloud Health test suite', function () {
                 let expectedStatus = 200;
                 let code = resStub.statusCode ? resStub.statusCode : 0;
                 code.should.equals(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
-                let expectedBody = "{\"status\":\"UP\",\"checks\":[{\"name\":\"liveness\",\"state\":\"UP\",\"data\":{\"reason\":\"\"}}]}";
+                let expectedBody = "{\"status\":\"UP\",\"checks\":[{\"name\":\"readiness\",\"state\":\"UP\",\"data\":{\"reason\":\"\"}}]}";
                 sinon_1.default.assert.calledWith(resStub.write, expectedBody);
                 done();
             }
@@ -282,7 +282,7 @@ describe('Connect Cloud Health test suite', function () {
         };
         process.once('SIGTERM', () => __awaiter(this, void 0, void 0, function* () {
             yield setTimeout(() => __awaiter(this, void 0, void 0, function* () {
-                index_1.LivenessEndpoint(cloudHealth)(reqStub, resStub, nextStub);
+                index_1.ReadinessEndpoint(cloudHealth)(reqStub, resStub, nextStub);
             }), 100);
         }));
         process.kill(process.pid, 'SIGTERM');

@@ -199,7 +199,6 @@ describe('Connect Cloud Health test suite', function() {
   });
 
   it('Readiness returns 503 Unavailable and STARTING on startup check starting', function(done) {
-
     const reqStub: Partial<http.IncomingMessage> = {};
     const nextStub: Partial<NextFunction> = {};
     const resStub: Partial<http.ServerResponse> = {
@@ -229,16 +228,16 @@ describe('Connect Cloud Health test suite', function() {
     let cloudHealth = new HealthChecker();
     cloudHealth.registerStartupCheck(
       // tslint:disable-next-line:no-shadowed-variable
-      new ReadinessCheck("startup", () => new Promise<void>(function(resolve, reject){
+      new StartupCheck("startup", () => new Promise<void>(function(resolve, reject){
         resolve();
       }))
     )
     .then(() => {
       ReadinessEndpoint(cloudHealth)(<http.IncomingMessage>reqStub, <http.ServerResponse>resStub, <NextFunction>nextStub)
     })
-    cloudHealth.registerLivenessCheck(
+    cloudHealth.registerReadinessCheck(
       // tslint:disable-next-line:no-shadowed-variable
-      new LivenessCheck("liveness", () => new Promise<void>(function(resolve, reject){
+      new LivenessCheck("readiness", () => new Promise<void>(function(resolve, reject){
         resolve();
       }))
     )
@@ -252,7 +251,7 @@ describe('Connect Cloud Health test suite', function() {
         let code = resStub.statusCode ? resStub.statusCode : 0
         code.should.equals(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
   
-        let expectedBody = "{\"status\":\"UP\",\"checks\":[{\"name\":\"liveness\",\"state\":\"UP\",\"data\":{\"reason\":\"\"}}]}";
+        let expectedBody = "{\"status\":\"UP\",\"checks\":[{\"name\":\"readiness\",\"state\":\"UP\",\"data\":{\"reason\":\"\"}}]}";
         sinon.assert.calledWith(resStub.write as sinon.SinonStub, expectedBody)
         done();
       }
@@ -318,7 +317,7 @@ describe('Connect Cloud Health test suite', function() {
     
     process.once('SIGTERM', async () => { 
       await setTimeout(async () => {
-        LivenessEndpoint(cloudHealth)(<http.IncomingMessage>reqStub, <http.ServerResponse>resStub, <NextFunction>nextStub)
+        ReadinessEndpoint(cloudHealth)(<http.IncomingMessage>reqStub, <http.ServerResponse>resStub, <NextFunction>nextStub)
       }, 100);
     });
     process.kill(process.pid, 'SIGTERM')
