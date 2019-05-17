@@ -10,7 +10,6 @@
 
 Cloud Health Connect provides a Connect Middleware for use in Express.js, Loopback and other frameworks that uses [Cloud Health](http://github.com/CloudNativeJS/cloud-health) to provide:
 
-* Combined Health checks
 * Readiness checks
 * Liveness checks
 * Combined Health (Readiness and Liveness) checks
@@ -71,9 +70,9 @@ For information on how to register startup, readiness, liveness and shutdown che
 
 #### Health, Liveness and Readiness endpoints
 
-The difference between liveness and readiness endpoints is the purpose purpose: readiness should be used to denote whether an application is "ready" to receive requests, and liveness should be used to denote whether an application is "live" (vs. in a state where it should be restarted.
+The difference between liveness and readiness endpoints is the purpose: readiness should be used to denote whether an application is "ready" to receive requests, and liveness should be used to denote whether an application is "live" (vs. in a state where it should be restarted.
 
-The health endpoint is designed for cloud technologies, such as cloud Foundry, that only support a single endpoint for both liveness and readiness checking.
+The combined health endpoint is designed for cloud technologies, such as Cloud Foundry which only support a single endpoint for both liveness and readiness checking.
 
 ### Using Cloud Health Connect with Typescript
 The Cloud Health Connect module is created in TypeScript and as such provides out of the box TypeScript support.
