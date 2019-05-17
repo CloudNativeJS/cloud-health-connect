@@ -37,6 +37,6 @@
     "typescript": "^3.3.3333"
   },
   "dependencies": {
-    "@cloudnative/health": "^1.0.1"
+    "@cloudnative/health": "^2.0.0"
   }
 }
