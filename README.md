@@ -62,7 +62,7 @@ The middleware writes the data returned by the Cloud Health module as JSON, and 
 5. Register a combined health endpoint:
 
   ```js
-  app.use('/health', health.ReadinessEndpoint(healthcheck))
+  app.use('/health', health.HealthEndpoint(healthcheck))
   ```
   If no readiness or liveness checks are registered, this will report `200 OK` and `UP`.
 
