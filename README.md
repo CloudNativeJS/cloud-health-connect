@@ -1,7 +1,7 @@
 # Cloud Health Connect
 <p align=center>
 <a href='http://CloudNativeJS.io/'><img src='https://img.shields.io/badge/homepage-CloudNativeJS-blue.svg'></a>
-<a href='https://www.npmjs.com/package/@cloudnative/health-connect'><img src='https://img.shields.io/badge/npm-v2.0.0-blue' alt='npm'/>
+<a href='https://www.npmjs.com/package/@cloudnative/health-connect'><img src='https://img.shields.io/npm/v/@cloudnative/health-connect' alt='npm'/></a>
 <a href="http://travis-ci.org/CloudNativeJS/cloud-health-connect"><img src="https://secure.travis-ci.org/CloudNativeJS/cloud-health-connect.svg?branch=master" alt="Build status"></a>
 <a href='https://coveralls.io/github/CloudNativeJS/cloud-health-connect?branch=master'><img src='https://coveralls.io/repos/github/CloudNativeJS/cloud-health-connect/badge.svg?branch=master' alt='Coverage Status' /></a>
 <a href='https://greenkeeper.io/'><img src='https://badges.greenkeeper.io/CloudNativeJS/cloud-health-connect.svg' alt='Greenkeeper' /></a>
