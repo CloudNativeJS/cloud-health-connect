@@ -29,7 +29,7 @@ function HealthEndpoint(checker: HealthChecker): NextHandleFunction {
         checker.getStatus()
         .then((status) => {
             switch (status.status) {
-                case State.STARTING:    res.statusCode = StateCode.OK; break;
+                case State.STARTING:    res.statusCode = StateCode.DOWN; break;
                 case State.UP:          res.statusCode = StateCode.OK; break;
                 case State.DOWN:        res.statusCode = StateCode.DOWN; break;
                 case State.STOPPING:    res.statusCode = StateCode.DOWN; break;
