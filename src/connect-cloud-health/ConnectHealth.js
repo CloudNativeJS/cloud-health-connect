@@ -34,7 +34,7 @@ function HealthEndpoint(checker) {
             .then((status) => {
             switch (status.status) {
                 case health_1.State.STARTING:
-                    res.statusCode = StateCode.OK;
+                    res.statusCode = StateCode.DOWN;
                     break;
                 case health_1.State.UP:
                     res.statusCode = StateCode.OK;

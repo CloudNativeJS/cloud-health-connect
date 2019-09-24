@@ -287,13 +287,13 @@ describe('Connect Cloud Health test suite', function () {
         }));
         process.kill(process.pid, 'SIGTERM');
     });
-    it('Health returns 200 OK and STARTING on startup check starting', function (done) {
+    it('Health returns 503 Unavailable and STARTING on startup check starting', function (done) {
         const reqStub = {};
         const nextStub = {};
         const resStub = {
             write: sinon_1.default.fake(),
             end: function () {
-                let expectedStatus = 200;
+                let expectedStatus = 503;
                 let code = resStub.statusCode ? resStub.statusCode : 0;
                 code.should.equals(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
                 let expectedBody = "{\"status\":\"STARTING\",\"checks\":[{\"name\":\"startup\",\"state\":\"STARTING\",\"data\":{\"reason\":\"\"}}]}";
