@@ -30,8 +30,14 @@ const chai_1 = require("chai");
 const sinon_1 = __importDefault(require("sinon"));
 const index_1 = require("../../index");
 chai_1.should();
-describe('Connect Cloud Health test suite', function () {
-    it('Liveness returns 200 OK and STARTING on startup check starting', function (done) {
+describe('Connect Cloud Health test suite', () => {
+    it('Liveness returns 200 OK on startup check starting', (done) => {
+        let cloudHealth = new index_1.HealthChecker();
+        const StartPromise = () => new Promise((resolve, _reject) => {
+            setTimeout(resolve, 100, 'foo');
+        });
+        let StartCheck = new index_1.StartupCheck("StartCheck", StartPromise);
+        cloudHealth.registerStartupCheck(StartCheck);
         const reqStub = {};
         const nextStub = {};
         const resStub = {
@@ -40,24 +46,16 @@ describe('Connect Cloud Health test suite', function () {
                 let expectedStatus = 200;
                 let code = resStub.statusCode ? resStub.statusCode : 0;
                 code.should.equals(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
-                let expectedBody = "{\"status\":\"STARTING\",\"checks\":[{\"name\":\"startup\",\"state\":\"STARTING\",\"data\":{\"reason\":\"\"}}]}";
-                sinon_1.default.assert.calledWith(resStub.write, expectedBody);
                 done();
             }
         };
-        let cloudHealth = new index_1.HealthChecker();
-        cloudHealth.registerStartupCheck(
-        // tslint:disable-next-line:no-shadowed-variable
-        new index_1.StartupCheck("startup", () => new Promise(function (resolve, reject) {
-            resolve();
-        })));
         index_1.LivenessEndpoint(cloudHealth)(reqStub, resStub, nextStub);
     });
-    it('Liveness returns 200 OK and UP on liveness success', function (done) {
+    it('Liveness returns 200 OK and UP on liveness success', (done) => {
         let cloudHealth = new index_1.HealthChecker();
         cloudHealth.registerLivenessCheck(
         // tslint:disable-next-line:no-shadowed-variable
-        new index_1.LivenessCheck("test1", () => new Promise(function (resolve, reject) {
+        new index_1.LivenessCheck("test1", () => new Promise((resolve, _reject) => {
             resolve();
         })));
         const reqStub = {};
@@ -179,7 +177,13 @@ describe('Connect Cloud Health test suite', function () {
             }
         };
     });
-    it('Readiness returns 503 Unavailable and STARTING on startup check starting', function (done) {
+    it('Readiness returns 503 Unavailable on startup check starting', (done) => {
+        let cloudHealth = new index_1.HealthChecker();
+        const StartPromise = () => new Promise((resolve, reject) => {
+            setTimeout(reject, 100, 'foo');
+        });
+        let StartCheck = new index_1.StartupCheck("StartCheck", StartPromise);
+        cloudHealth.registerStartupCheck(StartCheck);
         const reqStub = {};
         const nextStub = {};
         const resStub = {
@@ -188,17 +192,9 @@ describe('Connect Cloud Health test suite', function () {
                 let expectedStatus = 503;
                 let code = resStub.statusCode ? resStub.statusCode : 0;
                 code.should.equals(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
-                let expectedBody = "{\"status\":\"STARTING\",\"checks\":[{\"name\":\"startup\",\"state\":\"STARTING\",\"data\":{\"reason\":\"\"}}]}";
-                sinon_1.default.assert.calledWith(resStub.write, expectedBody);
                 done();
             }
         };
-        let cloudHealth = new index_1.HealthChecker();
-        cloudHealth.registerStartupCheck(
-        // tslint:disable-next-line:no-shadowed-variable
-        new index_1.StartupCheck("startup", () => new Promise(function (resolve, reject) {
-            resolve();
-        })));
         index_1.ReadinessEndpoint(cloudHealth)(reqStub, resStub, nextStub);
     });
     it('Readiness returns 200 OK and UP on startup and liveness checks', function (done) {
@@ -287,7 +283,13 @@ describe('Connect Cloud Health test suite', function () {
         }));
         process.kill(process.pid, 'SIGTERM');
     });
-    it('Health returns 503 Unavailable and STARTING on startup check starting', function (done) {
+    it('Health returns 503 Unavailable and STARTING on startup check starting', (done) => {
+        let cloudHealth = new index_1.HealthChecker();
+        const StartPromise = () => new Promise((resolve, _reject) => {
+            setTimeout(resolve, 100, 'foo');
+        });
+        let StartCheck = new index_1.StartupCheck("StartCheck", StartPromise);
+        cloudHealth.registerStartupCheck(StartCheck);
         const reqStub = {};
         const nextStub = {};
         const resStub = {
@@ -296,17 +298,11 @@ describe('Connect Cloud Health test suite', function () {
                 let expectedStatus = 503;
                 let code = resStub.statusCode ? resStub.statusCode : 0;
                 code.should.equals(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
-                let expectedBody = "{\"status\":\"STARTING\",\"checks\":[{\"name\":\"startup\",\"state\":\"STARTING\",\"data\":{\"reason\":\"\"}}]}";
+                let expectedBody = "{\"status\":\"STARTING\",\"checks\":[{\"name\":\"StartCheck\",\"state\":\"STARTING\",\"data\":{\"reason\":\"\"}}]}";
                 sinon_1.default.assert.calledWith(resStub.write, expectedBody);
                 done();
             }
         };
-        let cloudHealth = new index_1.HealthChecker();
-        cloudHealth.registerStartupCheck(
-        // tslint:disable-next-line:no-shadowed-variable
-        new index_1.StartupCheck("startup", () => new Promise(function (resolve, reject) {
-            resolve();
-        })));
         index_1.HealthEndpoint(cloudHealth)(reqStub, resStub, nextStub);
     });
     it('Health returns 200 OK and UP on liveness success', function (done) {
