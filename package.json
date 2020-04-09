@@ -27,7 +27,7 @@
     "@types/connect": "^3.4.32",
     "@types/mocha": "^7.0.1",
     "@types/node": "^13.7.2",
-    "@types/sinon": "7.5.1",
+    "@types/sinon": "7.5.2",
     "chai": "^4.1.2",
     "connect": "^3.4.32",
     "coveralls": "^3.0.2",
