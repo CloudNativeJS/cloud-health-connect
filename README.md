@@ -4,9 +4,9 @@
 <a href='https://www.npmjs.com/package/@cloudnative/health-connect'><img src='https://img.shields.io/npm/v/@cloudnative/health-connect' alt='npm'/></a>
 <a href="http://travis-ci.org/CloudNativeJS/cloud-health-connect"><img src="https://secure.travis-ci.org/CloudNativeJS/cloud-health-connect.svg?branch=master" alt="Build status"></a>
 <a href='https://coveralls.io/github/CloudNativeJS/cloud-health-connect?branch=master'><img src='https://coveralls.io/repos/github/CloudNativeJS/cloud-health-connect/badge.svg?branch=master' alt='Coverage Status' /></a>
-<a href='https://greenkeeper.io/'><img src='https://badges.greenkeeper.io/CloudNativeJS/cloud-health-connect.svg' alt='Greenkeeper' /></a>
-<a href='http://github.com/CloudNativeJS/ModuleLTS'><img src='https://img.shields.io/badge/Module%20LTS-Adopted-brightgreen.svg?style=flat' alt='Module LTS Adopted' /></a> 
-<a href='http://ibm.biz/node-support'><img src='https://img.shields.io/badge/IBM%20Support-Frameworks-brightgreen.svg?style=flat' alt='IBM Support' /></a>   
+<a href='https://dependabot.com/'><img src='https://flat.badgen.net/dependabot/CloudNativeJS/cloud-health-connect?icon=dependabot' alt='Dependabot' /></a>
+<a href='http://github.com/CloudNativeJS/ModuleLTS'><img src='https://img.shields.io/badge/Module%20LTS-Adopted-brightgreen.svg?style=flat' alt='Module LTS Adopted' /></a>
+<a href='http://ibm.biz/node-support'><img src='https://img.shields.io/badge/IBM%20Support-Frameworks-brightgreen.svg?style=flat' alt='IBM Support' /></a>
 </p>
 
 Cloud Health Connect provides a Connect Middleware for use in Express.js, Loopback and other frameworks that uses [Cloud Health](http://github.com/CloudNativeJS/cloud-health) to provide:
@@ -45,21 +45,21 @@ The middleware writes the data returned by the Cloud Health module as JSON, and 
   const health = require('@cloudnative/health-connect');
   let healthcheck = new health.HealthChecker();
   ```
-  
+
 3. Register a separate Liveness endpoint:
 
   ```js
   app.use('/live', health.LivenessEndpoint(healthcheck))
   ```
   If no livessness checks are registered, this will report `200 OK` and `UP`.
-    
+
 4. Register a separate readiness endpoint:
 
   ```js
   app.use('/ready', health.ReadinessEndpoint(healthcheck))
   ```
   If no readiness checks are registered, this will report `200 OK` and `UP`.
-  
+
 5. Register a combined health endpoint:
 
   ```js
