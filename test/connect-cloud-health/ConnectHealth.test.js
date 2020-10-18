@@ -31,6 +31,7 @@ const chai_1 = require("chai");
 const sinon_1 = __importDefault(require("sinon"));
 const index_1 = require("../../index");
 const HealthLogo_1 = require("../../src/connect-cloud-health/HealthLogo");
+const health_1 = require("@cloudnative/health");
 chai_1.should();
 const shield = {
     label: 'health',
@@ -416,92 +417,87 @@ describe('Connect Cloud Health test suite', () => {
         process.kill(process.pid, 'SIGTERM');
     });
     it('Shield returns 200 OK and "starting" label on startup check starting', (done) => {
-        let cloudHealth = new index_1.HealthChecker();
-        const StartPromise = () => new Promise((resolve, _reject) => {
-            setTimeout(resolve, 100, 'foo');
-        });
-        let StartCheck = new index_1.StartupCheck("StartCheck", StartPromise);
-        cloudHealth.registerStartupCheck(StartCheck);
+        const expected = { message: 'starting', color: 'blue' };
+        const cloudHealth = new index_1.HealthChecker();
+        const startPromise = () => Promise.resolve();
+        const startCheck = new index_1.StartupCheck('StartCheck', startPromise);
+        cloudHealth.registerStartupCheck(startCheck);
         const reqStub = {};
         const nextStub = {};
+        const write = sinon_1.default.fake();
         const resStub = {
-            write: sinon_1.default.fake(),
-            end: function () {
-                let expectedStatus = 200;
-                let code = resStub.statusCode ? resStub.statusCode : 0;
-                code.should.equals(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
-                let expectedBody = JSON.stringify(Object.assign(Object.assign({}, shield), { message: 'starting', color: 'blue' }));
-                sinon_1.default.assert.calledWith(resStub.write, expectedBody);
+            write,
+            end() {
+                var _a;
+                const expectedStatus = 200;
+                const code = (_a = resStub.statusCode) !== null && _a !== void 0 ? _a : 0;
+                code.should.equal(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+                const expectedBody = JSON.stringify(Object.assign(Object.assign({}, shield), expected));
+                sinon_1.default.assert.calledOnceWithExactly(write, expectedBody);
                 done();
             }
         };
         index_1.ShieldEndpoint(cloudHealth)(reqStub, resStub, nextStub);
     });
-    it('Shield returns 200 OK and "up" label on liveness success', function (done) {
-        let cloudHealth = new index_1.HealthChecker();
-        cloudHealth.registerLivenessCheck(
-        // tslint:disable-next-line:no-shadowed-variable
-        new index_1.LivenessCheck("test1", () => new Promise(function (resolve, reject) {
-            resolve();
-        })));
+    it('Shield returns 200 OK and "up" label on liveness success', (done) => {
+        const expected = { message: 'up', color: 'green' };
+        const cloudHealth = new index_1.HealthChecker();
+        cloudHealth.registerLivenessCheck(new index_1.LivenessCheck("test1", () => Promise.resolve()));
         const reqStub = {};
         const nextStub = {};
+        const write = sinon_1.default.fake();
         const resStub = {
-            write: sinon_1.default.fake(),
-            end: function () {
-                let expectedStatus = 200;
-                let code = resStub.statusCode ? resStub.statusCode : 0;
-                code.should.equals(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
-                let expectedBody = JSON.stringify(Object.assign(Object.assign({}, shield), { message: 'up', color: 'green' }));
-                sinon_1.default.assert.calledWith(resStub.write, expectedBody);
+            write,
+            end() {
+                var _a;
+                const expectedStatus = 200;
+                const code = (_a = resStub.statusCode) !== null && _a !== void 0 ? _a : 0;
+                code.should.equal(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+                const expectedBody = JSON.stringify(Object.assign(Object.assign({}, shield), expected));
+                sinon_1.default.assert.calledOnceWithExactly(write, expectedBody);
                 done();
             }
         };
         index_1.ShieldEndpoint(cloudHealth)(reqStub, resStub, nextStub);
     });
-    it('Shield returns 200 OK and "down" message on liveness fail', function (done) {
-        let cloudHealth = new index_1.HealthChecker();
-        cloudHealth.registerLivenessCheck(
-        // tslint:disable-next-line:no-shadowed-variable
-        new index_1.LivenessCheck("test1", () => new Promise(function (resolve, reject) {
-            throw new Error("Liveness Failure");
-        })));
+    it('Shield returns 200 OK and "down" message on liveness fail', (done) => {
+        const expected = { message: 'down', color: 'red' };
+        const cloudHealth = new index_1.HealthChecker();
+        cloudHealth.registerLivenessCheck(new index_1.LivenessCheck("test1", () => Promise.reject()));
         const reqStub = {};
         const nextStub = {};
+        const write = sinon_1.default.fake();
         const resStub = {
-            write: sinon_1.default.fake(),
-            end: function () {
-                let expectedStatus = 200;
-                let code = resStub.statusCode ? resStub.statusCode : 0;
-                code.should.equals(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
-                let expectedBody = JSON.stringify(Object.assign(Object.assign({}, shield), { message: 'down', color: 'red' }));
-                sinon_1.default.assert.calledWith(resStub.write, expectedBody);
+            write,
+            end() {
+                var _a;
+                const expectedStatus = 200;
+                const code = (_a = resStub.statusCode) !== null && _a !== void 0 ? _a : 0;
+                code.should.equal(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+                const expectedBody = JSON.stringify(Object.assign(Object.assign({}, shield), expected));
+                sinon_1.default.assert.calledOnceWithExactly(write, expectedBody);
                 done();
             }
         };
         index_1.ShieldEndpoint(cloudHealth)(reqStub, resStub, nextStub);
     });
-    it('Shield returns 200 OK and "stopping" message on STOPPING', function (done) {
+    it('Shield returns 200 OK and "stopping" message on STOPPING', (done) => {
+        const expected = { message: 'stopping', color: 'orange' };
         process.removeAllListeners('SIGTERM');
-        let cloudHealth = new index_1.HealthChecker();
-        cloudHealth.registerShutdownCheck(
-        // tslint:disable-next-line:no-shadowed-variable
-        new index_1.ShutdownCheck("test1", () => new Promise(function (resolve, reject) {
-            // tslint:disable-next-line:no-shadowed-variable no-unused-expression
-            new Promise(function (resolve, _reject) {
-                setTimeout(resolve, 1000, 'foo');
-            });
-        })));
+        const cloudHealth = new index_1.HealthChecker();
+        cloudHealth.registerShutdownCheck(new index_1.ShutdownCheck("test1", () => new Promise(resolve => setTimeout(resolve, 1000))));
         const reqStub = {};
         const nextStub = {};
+        const write = sinon_1.default.fake();
         const resStub = {
-            write: sinon_1.default.fake(),
-            end: function () {
-                let expectedStatus = 200;
-                let code = resStub.statusCode ? resStub.statusCode : 0;
-                code.should.equals(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
-                let expectedBody = JSON.stringify(Object.assign(Object.assign({}, shield), { message: 'stopping', color: 'orange' }));
-                sinon_1.default.assert.calledWith(resStub.write, expectedBody);
+            write,
+            end() {
+                var _a;
+                const expectedStatus = 200;
+                const code = (_a = resStub.statusCode) !== null && _a !== void 0 ? _a : 0;
+                code.should.equal(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+                const expectedBody = JSON.stringify(Object.assign(Object.assign({}, shield), expected));
+                sinon_1.default.assert.calledOnceWithExactly(write, expectedBody);
                 done();
             }
         };
@@ -510,24 +506,25 @@ describe('Connect Cloud Health test suite', () => {
         });
         process.kill(process.pid, 'SIGTERM');
     });
-    it('Shield returns 200 OK and "stopped" message on STOPPED', function (done) {
+    it('Shield returns 200 OK and "stopped" message on STOPPED', (done) => {
+        const expected = { message: 'stopped', color: 'grey' };
         process.removeAllListeners('SIGTERM');
-        let cloudHealth = new index_1.HealthChecker();
-        const promiseone = () => new Promise((resolve, _reject) => {
-            setTimeout(resolve, 1);
-        });
-        let checkone = new index_1.ShutdownCheck("test1", promiseone);
+        const cloudHealth = new index_1.HealthChecker();
+        const promiseone = () => Promise.resolve();
+        const checkone = new index_1.ShutdownCheck("test1", promiseone);
         cloudHealth.registerShutdownCheck(checkone);
         const reqStub = {};
         const nextStub = {};
+        const write = sinon_1.default.fake();
         const resStub = {
-            write: sinon_1.default.fake(),
-            end: function () {
-                let expectedStatus = 200;
-                let code = resStub.statusCode ? resStub.statusCode : 0;
-                code.should.equals(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
-                let expectedBody = JSON.stringify(Object.assign(Object.assign({}, shield), { message: 'stopped', color: 'grey' }));
-                sinon_1.default.assert.calledWith(resStub.write, expectedBody);
+            write,
+            end() {
+                var _a;
+                const expectedStatus = 200;
+                const code = (_a = resStub.statusCode) !== null && _a !== void 0 ? _a : 0;
+                code.should.equal(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+                const expectedBody = JSON.stringify(Object.assign(Object.assign({}, shield), expected));
+                sinon_1.default.assert.calledOnceWithExactly(write, expectedBody);
                 done();
             }
         };
@@ -537,6 +534,105 @@ describe('Connect Cloud Health test suite', () => {
             }, 100);
         });
         process.kill(process.pid, 'SIGTERM');
+    });
+    it('Shield returns 200 OK with custom label and logo on liveness success', (done) => {
+        const expected = { label: 'label', logoSvg: 'testlogo', message: 'up', color: 'green' };
+        const cloudHealth = new index_1.HealthChecker();
+        cloudHealth.registerLivenessCheck(new index_1.LivenessCheck("test1", () => Promise.resolve()));
+        const reqStub = {};
+        const nextStub = {};
+        const write = sinon_1.default.fake();
+        const resStub = {
+            write,
+            end() {
+                var _a;
+                const expectedStatus = 200;
+                const code = (_a = resStub.statusCode) !== null && _a !== void 0 ? _a : 0;
+                code.should.equal(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+                const expectedBody = JSON.stringify(Object.assign(Object.assign({}, shield), expected));
+                sinon_1.default.assert.calledOnceWithExactly(write, expectedBody);
+                done();
+            }
+        };
+        index_1.ShieldEndpoint(cloudHealth, expected.label, expected.logoSvg)(reqStub, resStub, nextStub);
+    });
+    it('Shield returns 200 OK with custom label on explicit UP status', (done) => {
+        const expected = { label: 'label', message: 'up', color: 'green' };
+        const checker = {
+            getStatus() {
+                return __awaiter(this, void 0, void 0, function* () {
+                    return { status: health_1.State.UP };
+                });
+            },
+        };
+        const reqStub = {};
+        const nextStub = {};
+        const write = sinon_1.default.fake();
+        const resStub = {
+            write,
+            end() {
+                var _a;
+                const expectedStatus = 200;
+                const code = (_a = resStub.statusCode) !== null && _a !== void 0 ? _a : 0;
+                code.should.equal(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+                const expectedBody = JSON.stringify(Object.assign(Object.assign({}, shield), expected));
+                sinon_1.default.assert.calledOnceWithExactly(write, expectedBody);
+                done();
+            }
+        };
+        index_1.ShieldEndpoint(checker, expected.label)(reqStub, resStub, nextStub);
+    });
+    it('Shield returns 200 OK with "unknown" message for UNKNOWN status', (done) => {
+        const expected = { label: 'label', message: 'unknown', color: 'yellow' };
+        const checker = {
+            getStatus() {
+                return __awaiter(this, void 0, void 0, function* () {
+                    return { status: health_1.State.UNKNOWN };
+                });
+            },
+        };
+        const reqStub = {};
+        const nextStub = {};
+        const write = sinon_1.default.fake();
+        const resStub = {
+            write,
+            end() {
+                var _a;
+                const expectedStatus = 200;
+                const code = (_a = resStub.statusCode) !== null && _a !== void 0 ? _a : 0;
+                code.should.equal(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+                const expectedBody = JSON.stringify(Object.assign(Object.assign({}, shield), expected));
+                sinon_1.default.assert.calledOnceWithExactly(write, expectedBody);
+                done();
+            }
+        };
+        index_1.ShieldEndpoint(checker, expected.label)(reqStub, resStub, nextStub);
+    });
+    it('Shield returns 200 OK with "unknown" message for unrecognized status', (done) => {
+        const expected = { label: 'label', message: 'unknown', color: 'yellow' };
+        const checker = {
+            getStatus() {
+                return __awaiter(this, void 0, void 0, function* () {
+                    return { status: 'not-recognized-status' };
+                });
+            },
+        };
+        const write = sinon_1.default.spy();
+        const reqStub = {};
+        const nextStub = {};
+        const resStub = {
+            write,
+            end() {
+                var _a;
+                const expectedStatus = 200;
+                const code = (_a = resStub.statusCode) !== null && _a !== void 0 ? _a : 0;
+                code.should.equal(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+                const expectedBody = JSON.stringify(Object.assign(Object.assign({}, shield), expected));
+                sinon_1.default.assert.calledOnceWithExactly(write, expectedBody);
+                done();
+            }
+        };
+        index_1.ShieldEndpoint(checker, expected.label)(reqStub, resStub, nextStub);
     });
 });
 //# sourceMappingURL=ConnectHealth.test.js.map

@@ -1,4 +1,3 @@
-import { log } from 'console';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
