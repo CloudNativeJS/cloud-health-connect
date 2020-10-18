@@ -16,10 +16,18 @@
 
 import { should, expect } from 'chai';
 import sinon from 'sinon'; 
-import { HealthEndpoint, ReadinessEndpoint, LivenessEndpoint, HealthChecker, StartupCheck, LivenessCheck, ReadinessCheck, ShutdownCheck } from '../../index';
+import { HealthEndpoint, ReadinessEndpoint, LivenessEndpoint, ShieldEndpoint, HealthChecker, StartupCheck, LivenessCheck, ReadinessCheck, ShutdownCheck } from '../../index';
 import {NextFunction} from 'connect';
+import { logo } from '../../src/connect-cloud-health/HealthLogo';
 import * as http from "http";
 should();
+
+const shield = {
+  label: 'health',
+  logoSvg: logo,
+  schemaVersion: 1,
+  labelColor: 'lightgrey',
+};
 
 describe('Connect Cloud Health test suite', () => {
 
@@ -459,6 +467,171 @@ describe('Connect Cloud Health test suite', () => {
     });
     process.kill(process.pid, 'SIGTERM')
     
+  });
+
+  it('Shield returns 200 OK and "starting" label on startup check starting', (done) => {
+    let cloudHealth = new HealthChecker();
+    const StartPromise = () => new Promise<void>((resolve,_reject) => {
+      setTimeout(resolve, 100, 'foo');
+    })
+    let StartCheck = new StartupCheck("StartCheck",StartPromise);
+    cloudHealth.registerStartupCheck(StartCheck);
+
+    const reqStub: Partial<http.IncomingMessage> = {};
+    const nextStub: Partial<NextFunction> = {};
+    const resStub: Partial<http.ServerResponse> = {
+      write: sinon.fake(),
+      end: function () {
+        let expectedStatus = 200;
+        let code = resStub.statusCode ? resStub.statusCode : 0
+        code.should.equals(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+
+        let expectedBody = JSON.stringify({
+          ...shield,
+          message: 'starting',
+          color: 'blue',
+        });
+        sinon.assert.calledWith(resStub.write as sinon.SinonStub, expectedBody)
+        done();
+      }
+    };
+
+    ShieldEndpoint(cloudHealth)(<http.IncomingMessage>reqStub, <http.ServerResponse>resStub, <NextFunction>nextStub)
+  });
+
+  it('Shield returns 200 OK and "up" label on liveness success', function(done) {
+    let cloudHealth = new HealthChecker();
+    cloudHealth.registerLivenessCheck(
+      // tslint:disable-next-line:no-shadowed-variable
+      new LivenessCheck("test1", () => new Promise<void>(function(resolve, reject){
+        resolve();
+      }))
+    )
+
+    const reqStub: Partial<http.IncomingMessage> = {};
+    const nextStub: Partial<NextFunction> = {};
+    const resStub: Partial<http.ServerResponse> = {
+      write: sinon.fake(),
+      end: function () {
+        let expectedStatus = 200;
+        let code = resStub.statusCode ? resStub.statusCode : 0
+        code.should.equals(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+
+        let expectedBody = JSON.stringify({
+          ...shield,
+          message: 'up',
+          color: 'green',
+        });
+        sinon.assert.calledWith(resStub.write as sinon.SinonStub, expectedBody)
+        done();
+      }
+    };
+
+    ShieldEndpoint(cloudHealth)(<http.IncomingMessage>reqStub, <http.ServerResponse>resStub, <NextFunction>nextStub)
+  });
+
+  it('Shield returns 200 OK and "down" message on liveness fail', function(done) {
+    let cloudHealth = new HealthChecker();
+    cloudHealth.registerLivenessCheck(
+      // tslint:disable-next-line:no-shadowed-variable
+      new LivenessCheck("test1", () => new Promise<void>(function(resolve, reject){
+        throw new Error("Liveness Failure");
+      }))
+    )
+
+    const reqStub: Partial<http.IncomingMessage> = {};
+    const nextStub: Partial<NextFunction> = {};
+    const resStub: Partial<http.ServerResponse> = {
+      write: sinon.fake(),
+      end: function () {
+        let expectedStatus = 200;
+        let code = resStub.statusCode ? resStub.statusCode : 0
+        code.should.equals(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+
+        let expectedBody = JSON.stringify({
+          ...shield,
+          message: 'down',
+          color: 'red',
+        });
+        sinon.assert.calledWith(resStub.write as sinon.SinonStub, expectedBody)
+        done();
+      }
+    };
+
+    ShieldEndpoint(cloudHealth)(<http.IncomingMessage>reqStub, <http.ServerResponse>resStub, <NextFunction>nextStub)
+  });
+
+  it('Shield returns 200 OK and "stopping" message on STOPPING', function(done) {
+    process.removeAllListeners('SIGTERM');
+    let cloudHealth = new HealthChecker();
+    cloudHealth.registerShutdownCheck(
+      // tslint:disable-next-line:no-shadowed-variable
+      new ShutdownCheck("test1", () => new Promise<void>(function(resolve, reject){
+        // tslint:disable-next-line:no-shadowed-variable no-unused-expression
+        new Promise(function(resolve, _reject){
+          setTimeout(resolve, 1000, 'foo');
+        })
+      }))
+    )
+
+    const reqStub: Partial<http.IncomingMessage> = {};
+    const nextStub: Partial<NextFunction> = {};
+    const resStub: Partial<http.ServerResponse> = {
+      write: sinon.fake(),
+      end: function () {
+        let expectedStatus = 200;
+        let code = resStub.statusCode ? resStub.statusCode : 0
+        code.should.equals(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+
+        let expectedBody = JSON.stringify({
+          ...shield,
+          message: 'stopping',
+          color: 'orange',
+        });
+        sinon.assert.calledWith(resStub.write as sinon.SinonStub, expectedBody)
+        done();
+      }
+    };
+    process.once('SIGTERM', () => { 
+      ShieldEndpoint(cloudHealth)(<http.IncomingMessage>reqStub, <http.ServerResponse>resStub, <NextFunction>nextStub)
+    });
+    process.kill(process.pid, 'SIGTERM')
+  });
+
+  it('Shield returns 200 OK and "stopped" message on STOPPED', function(done) {
+    process.removeAllListeners('SIGTERM');
+    let cloudHealth = new HealthChecker();
+    const promiseone = () => new Promise<void>((resolve, _reject) => {
+      setTimeout(resolve, 1);
+    });
+    let checkone = new ShutdownCheck("test1", promiseone)
+    cloudHealth.registerShutdownCheck(checkone)
+
+    const reqStub: Partial<http.IncomingMessage> = {};
+    const nextStub: Partial<NextFunction> = {};
+    const resStub: Partial<http.ServerResponse> = {
+      write: sinon.fake(),
+      end: function () {
+        let expectedStatus = 200;
+        let code = resStub.statusCode ? resStub.statusCode : 0
+        code.should.equals(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+
+        let expectedBody = JSON.stringify({
+          ...shield,
+          message: 'stopped',
+          color: 'grey',
+        });
+        sinon.assert.calledWith(resStub.write as sinon.SinonStub, expectedBody)
+        done();
+      }
+    };
+
+    process.once('SIGTERM', () => {
+      setTimeout(() => {
+        ShieldEndpoint(cloudHealth)(<http.IncomingMessage>reqStub, <http.ServerResponse>resStub, <NextFunction>nextStub)
+      }, 100);
+    });
+    process.kill(process.pid, 'SIGTERM')
   });
 
 });
