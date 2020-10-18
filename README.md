@@ -67,6 +67,17 @@ The middleware writes the data returned by the Cloud Health module as JSON, and 
   ```
   If no readiness or liveness checks are registered, this will report `200 OK` and `UP`.
 
+6. Register a shield health endpoint:
+
+  ```js
+  app.use('/shield', health.ShieldEndpoint(healthcheck, label, logo));
+  ```
+
+- `label` - optional label string, default is 'health'
+- `logo` - optional logo (SVG string), default is <img src="src/connect-cloud-health/healthcheck.svg" height="12"> as shown below
+
+This is an endpoint suitable for [Shields.IO](https://shields.io/) integration (see balow).
+
 For information on how to register startup, readiness, liveness and shutdown checks, see the [Cloud Health documentation](https://github.com/CloudNativeJS/cloud-health/blob/master/README.md).
 
 #### Health, Liveness and Readiness endpoints
@@ -74,6 +85,30 @@ For information on how to register startup, readiness, liveness and shutdown che
 The difference between liveness and readiness endpoints is the purpose: readiness should be used to denote whether an application is "ready" to receive requests, and liveness should be used to denote whether an application is "live" (vs. in a state where it should be restarted.
 
 The combined health endpoint is designed for cloud technologies, such as Cloud Foundry which only support a single endpoint for both liveness and readiness checking.
+
+#### Shield endpoint
+
+The Shield endpoint is compatible with the [Shields.IO Endpoint API](https://shields.io/endpoint).
+
+If your Shields endpoint is served as `https://example.com/shield` then the Shields.IO URL is:
+- `https://img.shields.io/endpoint?url=https://example.com/shield`
+
+This will return one of the images:
+
+![health: unknown](examples/unknown.svg)
+![health: starting](examples/starting.svg)
+![health: up](examples/up.svg)
+![health: stopping](examples/stopping.svg)
+![health: stopped](examples/stopped.svg)
+![health: down](examples/down.svg)
+
+For a custom label to differentiate deployments, use the `label` query parameter:
+
+- `https://img.shields.io/endpoint?label=production&url=https://example.com/shield`
+
+![production: down](examples/production-down.svg)
+
+You can also use a custom label or logo as optional parameters to the `health.ShieldEndpoint()` function (see above).
 
 ### Using Cloud Health Connect with Typescript
 The Cloud Health Connect module is created in TypeScript and as such provides out of the box TypeScript support.
