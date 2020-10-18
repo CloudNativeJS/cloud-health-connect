@@ -110,6 +110,20 @@ For a custom label to differentiate deployments, use the `label` query parameter
 
 You can also use a custom label or logo as optional parameters to the `health.ShieldEndpoint()` function (see above).
 
+Optional `style` query parameter can be used to change the appearance of the image:
+
+- `https://img.shields.io/endpoint?label=production&style=plastic&url=https://example.com/shield`
+
+Supported values for the `style` parameter:
+
+![social](examples/production-up-social.svg) `social`
+<br>![plastic](examples/production-up-plastic.svg) `plastic`
+<br>![flat](examples/production-up-flat.svg) `flat` (default)
+<br>![flat-square](examples/production-up-flatsquare.svg) `flat-square`
+<br>![for-the-badge](examples/production-up-forthebadge.svg) `for-the-badge`
+
+See the [Shields.IO](https://shields.io/) documentation for more options.
+
 ### Using Cloud Health Connect with Typescript
 The Cloud Health Connect module is created in TypeScript and as such provides out of the box TypeScript support.
 
