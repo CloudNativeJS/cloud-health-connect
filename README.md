@@ -1,4 +1,5 @@
-# Cloud Health Connect
+# The `cloud-health-connect` module is deprecated.
+
 <p align=center>
 <a href='http://CloudNativeJS.io/'><img src='https://img.shields.io/badge/homepage-CloudNativeJS-blue.svg'></a>
 <a href='https://www.npmjs.com/package/@cloudnative/health-connect'><img src='https://img.shields.io/npm/v/@cloudnative/health-connect' alt='npm'/></a>
