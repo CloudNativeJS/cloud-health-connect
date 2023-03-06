@@ -25,7 +25,7 @@ enum StateCode {
 }
 
 function HealthEndpoint(checker: HealthChecker): NextHandleFunction {
-    let middleware = <NextHandleFunction> function (req: http.IncomingMessage, res: http.ServerResponse, next: NextFunction) {
+    let middleware = <NextHandleFunction> function (_req: http.IncomingMessage, res: http.ServerResponse, _next: NextFunction) {
         checker.getStatus()
         .then((status) => {
             switch (status.status) {
@@ -38,14 +38,14 @@ function HealthEndpoint(checker: HealthChecker): NextHandleFunction {
             res.write(JSON.stringify(status));
             res.end()
         })
-        .catch((err) => {res.end()})
+        .catch((_err) => {res.end()})
     };
     return middleware
 } 
 
 function LivenessEndpoint(checker: HealthChecker): NextHandleFunction {
 
-    let middleware = <NextHandleFunction> function (req: http.IncomingMessage, res: http.ServerResponse, next: NextFunction) {
+    let middleware = <NextHandleFunction> function (_req: http.IncomingMessage, res: http.ServerResponse, _next: NextFunction) {
         checker.getLivenessStatus()
         .then((status) => {
             switch (status.status) {
@@ -58,14 +58,14 @@ function LivenessEndpoint(checker: HealthChecker): NextHandleFunction {
             res.write(JSON.stringify(status));
             res.end()
         })
-        .catch((err) => {res.end()})
+        .catch((_err) => {res.end()})
     };
     return middleware
 } 
 
 function ReadinessEndpoint(checker: HealthChecker): NextHandleFunction {
 
-    let middleware = <NextHandleFunction> function (req: http.IncomingMessage, res: http.ServerResponse, next: NextFunction) {
+    let middleware = <NextHandleFunction> function (_req: http.IncomingMessage, res: http.ServerResponse, _next: NextFunction) {
         checker.getReadinessStatus()
         .then((status) => {
             res.statusCode = StateCode.OK
@@ -79,7 +79,7 @@ function ReadinessEndpoint(checker: HealthChecker): NextHandleFunction {
             res.write(JSON.stringify(status));
             res.end();
         })
-        .catch((err) => {res.end()})
+        .catch((_err) => {res.end()})
     };
     return middleware
 }
