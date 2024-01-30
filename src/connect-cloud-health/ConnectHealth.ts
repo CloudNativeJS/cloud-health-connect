@@ -16,6 +16,7 @@
 
 import {HealthChecker, StartupCheck, ReadinessCheck, LivenessCheck, ShutdownCheck, State, PingCheck} from '@cloudnative/health';
 import {NextHandleFunction, NextFunction} from 'connect';
+import {logo} from './HealthLogo';
 import * as http from "http";
 
 enum StateCode {
@@ -23,6 +24,22 @@ enum StateCode {
     DOWN = 503,
     ERRORED = 500
 }
+
+type StateShieldValue = { message: string, color: string };
+
+const stateShield: Record<State, StateShieldValue> = {
+    [State.UP]:       { message: 'up',       color: 'green' },
+    [State.DOWN]:     { message: 'down',     color: 'red' },
+    [State.UNKNOWN]:  { message: 'unknown',  color: 'yellow' },
+    [State.STOPPED]:  { message: 'stopped',  color: 'grey' },
+    [State.STOPPING]: { message: 'stopping', color: 'orange' },
+    [State.STARTING]: { message: 'starting', color: 'blue' },
+};
+
+const shieldSchema = {
+    schemaVersion: 1,
+    labelColor: 'lightgrey',
+};
 
 function HealthEndpoint(checker: HealthChecker): NextHandleFunction {
     let middleware = <NextHandleFunction> function (req: http.IncomingMessage, res: http.ServerResponse, next: NextFunction) {
@@ -84,4 +101,24 @@ function ReadinessEndpoint(checker: HealthChecker): NextHandleFunction {
     return middleware
 }
 
-export { HealthEndpoint, LivenessEndpoint, ReadinessEndpoint, HealthChecker, StartupCheck, ReadinessCheck, LivenessCheck, ShutdownCheck, PingCheck };
+function ShieldEndpoint(checker: HealthChecker, label = 'health', logoSvg = logo): NextHandleFunction {
+    const middleware: NextHandleFunction = async (req, res, next) => {
+        try {
+            res.statusCode = StateCode.OK;
+            const { status } = await checker.getStatus();
+            const shield = {
+                label,
+                logoSvg,
+                ...shieldSchema,
+                ...(stateShield[status] ?? stateShield[State.UNKNOWN]),
+            };
+            res.write(JSON.stringify(shield));
+            res.end();
+        } catch (err) {
+            res.end();
+        }
+    };
+    return middleware;
+}
+
+export { HealthEndpoint, LivenessEndpoint, ReadinessEndpoint, ShieldEndpoint, HealthChecker, StartupCheck, ReadinessCheck, LivenessCheck, ShutdownCheck, PingCheck };

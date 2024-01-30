@@ -15,11 +15,21 @@
  */
 
 import { should, expect } from 'chai';
-import sinon from 'sinon'; 
-import { HealthEndpoint, ReadinessEndpoint, LivenessEndpoint, HealthChecker, StartupCheck, LivenessCheck, ReadinessCheck, ShutdownCheck } from '../../index';
+import sinon from 'sinon';
+import { HealthEndpoint, ReadinessEndpoint, LivenessEndpoint, ShieldEndpoint, HealthChecker, StartupCheck, LivenessCheck, ReadinessCheck, ShutdownCheck } from '../../index';
 import {NextFunction} from 'connect';
+import { logo } from '../../src/connect-cloud-health/HealthLogo';
 import * as http from "http";
+import { State } from '@cloudnative/health';
+import { IncomingMessage, ServerResponse } from 'http';
 should();
+
+const shield = {
+  label: 'health',
+  logoSvg: logo,
+  schemaVersion: 1,
+  labelColor: 'lightgrey',
+};
 
 describe('Connect Cloud Health test suite', () => {
 
@@ -459,6 +469,264 @@ describe('Connect Cloud Health test suite', () => {
     });
     process.kill(process.pid, 'SIGTERM')
     
+  });
+
+  it('Shield returns 200 OK and "starting" label on startup check starting', (done) => {
+    const expected = { message: 'starting', color: 'blue' };
+
+    const cloudHealth = new HealthChecker();
+    const startPromise = () => Promise.resolve();
+    const startCheck = new StartupCheck('StartCheck', startPromise);
+    cloudHealth.registerStartupCheck(startCheck);
+
+    const reqStub = {} as IncomingMessage;
+    const nextStub = {} as NextFunction;
+    const write = sinon.fake();
+
+    const resStub = {
+      write,
+      end () {
+        const expectedStatus = 200;
+        const code = resStub.statusCode ?? 0;
+        code.should.equal(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+
+        const expectedBody = JSON.stringify({ ...shield, ...expected });
+        sinon.assert.calledOnceWithExactly(write, expectedBody);
+        done();
+      }
+    } as unknown as ServerResponse;
+
+    ShieldEndpoint(cloudHealth)(reqStub, resStub, nextStub);
+  });
+
+  it('Shield returns 200 OK and "up" label on liveness success', (done) => {
+    const expected = { message: 'up', color: 'green' };
+
+    const cloudHealth = new HealthChecker();
+    cloudHealth.registerLivenessCheck(new LivenessCheck("test1", () => Promise.resolve()));
+
+    const reqStub = {} as IncomingMessage;
+    const nextStub = {} as NextFunction;
+    const write = sinon.fake();
+
+    const resStub = {
+      write,
+      end () {
+        const expectedStatus = 200;
+        const code = resStub.statusCode ?? 0;
+        code.should.equal(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+
+        const expectedBody = JSON.stringify({ ...shield, ...expected });
+        sinon.assert.calledOnceWithExactly(write, expectedBody);
+        done();
+      }
+    } as unknown as ServerResponse;
+
+    ShieldEndpoint(cloudHealth)(reqStub, resStub, nextStub);
+  });
+
+  it('Shield returns 200 OK and "down" message on liveness fail', (done) => {
+    const expected = { message: 'down', color: 'red' };
+
+    const cloudHealth = new HealthChecker();
+    cloudHealth.registerLivenessCheck(new LivenessCheck("test1", () => Promise.reject()));
+
+    const reqStub = {} as IncomingMessage;
+    const nextStub = {} as NextFunction;
+    const write = sinon.fake();
+
+    const resStub = {
+      write,
+      end () {
+        const expectedStatus = 200;
+        const code = resStub.statusCode ?? 0;
+        code.should.equal(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+
+        const expectedBody = JSON.stringify({ ...shield, ...expected });
+        sinon.assert.calledOnceWithExactly(write, expectedBody);
+        done();
+      }
+    } as unknown as ServerResponse;
+
+    ShieldEndpoint(cloudHealth)(reqStub, resStub, nextStub);
+  });
+
+  it('Shield returns 200 OK and "stopping" message on STOPPING', (done) => {
+    const expected = { message: 'stopping', color: 'orange' };
+
+    process.removeAllListeners('SIGTERM');
+    const cloudHealth = new HealthChecker();
+    cloudHealth.registerShutdownCheck(
+      new ShutdownCheck("test1", () => new Promise<void>(resolve => setTimeout(resolve, 1000)))
+    );
+
+    const reqStub = {} as IncomingMessage;
+    const nextStub = {} as NextFunction;
+    const write = sinon.fake();
+
+    const resStub = {
+      write,
+      end () {
+        const expectedStatus = 200;
+        const code = resStub.statusCode ?? 0;
+        code.should.equal(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+
+        const expectedBody = JSON.stringify({ ...shield, ...expected });
+        sinon.assert.calledOnceWithExactly(write, expectedBody)
+        done();
+      }
+    } as unknown as ServerResponse;
+
+    process.once('SIGTERM', () => {
+      ShieldEndpoint(cloudHealth)(reqStub, resStub, nextStub)
+    });
+    process.kill(process.pid, 'SIGTERM')
+  });
+
+  it('Shield returns 200 OK and "stopped" message on STOPPED', (done) => {
+    const expected = { message: 'stopped', color: 'grey' };
+
+    process.removeAllListeners('SIGTERM');
+    const cloudHealth = new HealthChecker();
+    const promiseone = () => Promise.resolve();
+    const checkone = new ShutdownCheck("test1", promiseone);
+    cloudHealth.registerShutdownCheck(checkone)
+
+    const reqStub = {} as IncomingMessage;
+    const nextStub = {} as NextFunction;
+    const write = sinon.fake();
+
+    const resStub = {
+      write,
+      end () {
+        const expectedStatus = 200;
+        const code = resStub.statusCode ?? 0;
+        code.should.equal(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+
+        const expectedBody = JSON.stringify({ ...shield, ...expected });
+        sinon.assert.calledOnceWithExactly(write, expectedBody);
+        done();
+      }
+    } as unknown as ServerResponse;
+
+    process.once('SIGTERM', () => {
+      setTimeout(() => {
+        ShieldEndpoint(cloudHealth)(reqStub, resStub, nextStub);
+      }, 100);
+    });
+    process.kill(process.pid, 'SIGTERM');
+  });
+
+  it('Shield returns 200 OK with custom label and logo on liveness success', (done) => {
+    const expected = { label: 'label', logoSvg: 'testlogo', message: 'up', color: 'green' };
+
+    const cloudHealth = new HealthChecker();
+    cloudHealth.registerLivenessCheck(new LivenessCheck("test1", () => Promise.resolve()));
+
+    const reqStub = {} as IncomingMessage;
+    const nextStub = {} as NextFunction;
+    const write = sinon.fake();
+
+    const resStub = {
+      write,
+      end () {
+        const expectedStatus = 200;
+        const code = resStub.statusCode ?? 0;
+        code.should.equal(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+
+        const expectedBody = JSON.stringify({ ...shield, ...expected });
+        sinon.assert.calledOnceWithExactly(write, expectedBody);
+        done();
+      }
+    } as unknown as ServerResponse;
+
+    ShieldEndpoint(cloudHealth, expected.label, expected.logoSvg)(reqStub, resStub, nextStub);
+  });
+
+  it('Shield returns 200 OK with custom label on explicit UP status', (done) => {
+    const expected = { label: 'label', message: 'up', color: 'green' };
+
+    const checker = {
+      async getStatus() {
+        return { status: State.UP };
+      },
+    } as HealthChecker;
+
+    const reqStub = {} as IncomingMessage;
+    const nextStub = {} as NextFunction;
+    const write = sinon.fake();
+
+    const resStub = {
+      write,
+      end () {
+        const expectedStatus = 200;
+        const code = resStub.statusCode ?? 0;
+        code.should.equal(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+
+        const expectedBody = JSON.stringify({ ...shield, ...expected });
+        sinon.assert.calledOnceWithExactly(write, expectedBody);
+        done();
+      }
+    } as unknown as ServerResponse;
+
+    ShieldEndpoint(checker, expected.label)(reqStub, resStub, nextStub);
+  });
+
+  it('Shield returns 200 OK with "unknown" message for UNKNOWN status', (done) => {
+    const expected = { label: 'label', message: 'unknown', color: 'yellow' };
+
+    const checker = {
+      async getStatus() {
+        return { status: State.UNKNOWN };
+      },
+    } as HealthChecker;
+
+    const reqStub = {} as IncomingMessage;
+    const nextStub = {} as NextFunction;
+    const write = sinon.fake();
+
+    const resStub = {
+      write,
+      end () {
+        const expectedStatus = 200;
+        const code = resStub.statusCode ?? 0;
+        code.should.equal(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+
+        const expectedBody = JSON.stringify({ ...shield, ...expected });
+        sinon.assert.calledOnceWithExactly(write, expectedBody);
+        done();
+      }
+    } as unknown as ServerResponse;
+
+    ShieldEndpoint(checker, expected.label)(reqStub, resStub, nextStub);
+  });
+
+  it('Shield returns 200 OK with "unknown" message for unrecognized status', (done) => {
+    const expected = { label: 'label', message: 'unknown', color: 'yellow' };
+
+    const checker = {
+      async getStatus() {
+        return { status: 'not-recognized-status' };
+      },
+    } as unknown as HealthChecker;
+
+    const write = sinon.spy();
+    const reqStub = {} as IncomingMessage;
+    const nextStub = {} as NextFunction;
+
+    const resStub = {
+      write,
+      end () {
+        const expectedStatus = 200;
+        const code = resStub.statusCode ?? 0;
+        code.should.equal(expectedStatus, `Should return: ${expectedStatus}, but returned: ${code}`);
+        const expectedBody = JSON.stringify({ ...shield, ...expected });
+        sinon.assert.calledOnceWithExactly(write, expectedBody);
+        done();
+      }
+    } as unknown as ServerResponse;
+
+    ShieldEndpoint(checker, expected.label)(reqStub, resStub, nextStub);
   });
 
 });
